@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class LuckyController extends AbstractController
 {
-    #[Route('lucky/number', name: 'lucky_number', methods: ['GET'])]
+    #[Route('lucky/number', 'lucky_number', methods: ['GET'])]
     #[Template('lucky/number.html.twig')]
     public function number(): array
     {
