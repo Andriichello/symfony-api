@@ -3,23 +3,30 @@
 namespace App\Command;
 
 use Exception;
+use Psy\Configuration;
 use Psy\Shell;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ShellCommand extends Command
 {
+    public function __construct(
+        private readonly ContainerInterface $container,
+        string $name = 'shell',
+    ) {
+        parent::__construct($name);
+    }
+
     protected function configure(): void
     {
         parent::configure();
-
-        $this->setName('shell');
-        $this->setDescription('Interact with your application via PsySH (REPL).');
+        $this->setDescription('Start PsySH (REPL).');
     }
 
     /**
-     * Starts PsySH (REPL).
+     * Start PsySH (REPL).
      *
      * @param InputInterface $input
      * @param OutputInterface $output
@@ -36,7 +43,12 @@ class ShellCommand extends Command
             return Command::FAILURE;
         }
 
-        (new Shell())->run();
+        $config = new Configuration();
+        $config->setStartupMessage('Use $container to access services.');
+
+        $shell = new Shell($config);
+        $shell->setScopeVariables(['container' => $this->container]);
+        $shell->run();
 
         return Command::SUCCESS;
     }
