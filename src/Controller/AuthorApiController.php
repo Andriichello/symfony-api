@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Author;
 use App\Repository\AuthorRepository;
+use Doctrine\ORM\Query\QueryException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,9 +37,22 @@ class AuthorApiController extends AbstractController
      */
     public function list(Request $request): JsonResponse
     {
-        $authors = empty($name = $request->query->get('name'))
-            ? $this->repo->findAll()
-            : $this->repo->searchByName($name);
+        $builder = $this->repo->createQueryBuilder('a');
+
+        $name = $request->query->get('name');
+        $alias = $request->query->get('alias');
+
+        if (isset($name) && strlen($name) > 0) {
+            $builder->whereColumnLikeByWords('a.name', $name, true);
+        }
+
+        if (isset($alias) && strlen($alias) > 0) {
+            $builder->whereColumnLikeByWords('a.alias', $alias, true);
+        }
+
+        $authors = $builder->orderBy('a.id', 'ASC')
+            ->getQuery()
+            ->getResult();
 
         $data = array_map(
             function (Author $author) {
