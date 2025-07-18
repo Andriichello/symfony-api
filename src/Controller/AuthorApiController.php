@@ -2,10 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Author;
+use App\Repository\AuthorRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class AuthorApiController.
@@ -16,58 +17,76 @@ use Symfony\Component\Routing\Attribute\Route;
 class AuthorApiController extends AbstractController
 {
     /**
-     * Authors to be returned in responses.
+     * AuthorApiController's constructor.
      *
-     * @var array[]
+     * @param AuthorRepository $repo
      */
-    protected array $authors = [
-        [
-            'id' => 1,
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-        ],
-        [
-            'id' => 2,
-            'first_name' => 'Larry',
-            'last_name' => 'Filin',
-        ],
-        [
-            'id' => 3,
-            'first_name' => 'Tim',
-            'last_name' => 'Stone',
-        ],
-    ];
+    public function __construct(
+        private readonly AuthorRepository $repo
+    ) {
+        //
+    }
 
-    public function list(): JsonResponse
+    /**
+     * Returns a list of author records.
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function list(Request $request): JsonResponse
     {
+        $authors = empty($name = $request->query->get('name'))
+            ? $this->repo->findAll()
+            : $this->repo->searchByName($name);
+
+        $data = array_map(
+            function (Author $author) {
+                return [
+                    'id' => $author->getId(),
+                    'name' => $author->getName(),
+                    'alias' => $author->getAlias(),
+                ];
+            },
+            $authors
+        );
+
         return new JsonResponse([
-            'data' => $this->authors,
+            'data' => $data,
             'meta' => [
-                'from' => 1,
-                'to' => $count = count($this->authors),
+                'from' => (int) !empty($authors),
+                'to' => $count = count($authors),
                 'total' => $count,
-                'per_page' => 100,
+                'per_page' => 'all',
                 'current_page' => 1,
                 'last_page' => 1,
             ],
+            'message' => 'OK',
         ]);
     }
 
+    /**
+     * Returns an author record by ID.
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
     public function show(int $id): JsonResponse
     {
-        $authors = array_filter(
-            $this->authors,
-            function (array $a) use ($id) {
-                return $a['id'] === $id;
-            }
-        );
+        $author = $this->repo->find($id);
 
-        if (!count($authors)) {
-            throw new NotFoundHttpException('Author not found.');
+        if (empty($author)) {
+            return new JsonResponse(['message' => 'Author not found.'], 404);
         }
 
         return new JsonResponse([
-            'data' => current($authors),
+            'data' => [
+                'id' => $author->getId(),
+                'name' => $author->getName(),
+                'alias' => $author->getAlias(),
+            ],
+            'message' => 'OK',
         ]);
     }
 }
