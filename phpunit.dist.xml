@@ -15,6 +15,8 @@
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
+        <server name="KERNEL_CLASS" value="App\Kernel" />
+        <server name="DATABASE_URL" value="postgresql://root:password@127.0.0.1:5432/symfony_api_test?serverVersion=16&amp;charset=utf8" />
     </php>
 
     <testsuites>
