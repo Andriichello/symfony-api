@@ -6,6 +6,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Class AuthorController.
+ *
+ * @package App\Controller
+ * @author Andrii Prykhodko <andriichello@gmail.com>
+ */
 final class AuthorController extends AbstractController
 {
     #[Route('/author', name: 'app_author')]

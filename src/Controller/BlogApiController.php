@@ -7,6 +7,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Class BlogApiController.
+ *
+ * @package App\Controller
+ * @author Andrii Prykhodko <andriichello@gmail.com>
+ */
 class BlogApiController extends AbstractController
 {
     /**
