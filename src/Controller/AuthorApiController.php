@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Author;
+use App\Query\AuthorQueryBuilder;
 use App\Repository\AuthorRepository;
-use Doctrine\ORM\Query\QueryException;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,17 +38,24 @@ class AuthorApiController extends AbstractController
      */
     public function list(Request $request): JsonResponse
     {
-        $builder = $this->repo->createQueryBuilder('a');
+        $search = $request->get('search');
+        $filter = $request->get('filter');
 
-        $name = $request->query->get('name');
-        $alias = $request->query->get('alias');
+        if (isset($filter) && is_array($filter)) {
+            if (isset($search) && strlen($search) > 0) {
+                $message = 'Cannot use both `filter` and `search` parameters' .
+                    ' at the same time.';
 
-        if (isset($name) && strlen($name) > 0) {
-            $builder->whereColumnLikeByWords('a.name', $name, true);
+                return new JsonResponse(['message' => $message], 400);
+            }
         }
 
-        if (isset($alias) && strlen($alias) > 0) {
-            $builder->whereColumnLikeByWords('a.alias', $alias, true);
+        $builder = $this->repo->createQueryBuilder($alias = 'a');
+        $builder = $this->repo->applyRequestFilters($builder, $alias, $request);
+
+        if (isset($search) && strlen($search) > 0) {
+            /** @var AuthorQueryBuilder $builder */
+            $builder = $this->repo->search($alias, $builder, $search);
         }
 
         $authors = $builder->orderBy('a.id', 'ASC')
