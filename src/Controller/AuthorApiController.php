@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
+use App\Controller\Trait\PaginatesTrait;
 use App\Entity\Author;
 use App\Query\AuthorQueryBuilder;
 use App\Repository\AuthorRepository;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AuthorApiController extends AbstractController
 {
+    use PaginatesTrait;
+
     /**
      * AuthorApiController's constructor.
      *
@@ -58,31 +60,15 @@ class AuthorApiController extends AbstractController
             $builder = $this->repo->search($alias, $builder, $search);
         }
 
-        $authors = $builder->orderBy('a.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-
-        $data = array_map(
-            function (Author $author) {
-                return [
-                    'id' => $author->getId(),
-                    'name' => $author->getName(),
-                    'alias' => $author->getAlias(),
-                ];
-            },
-            $authors
-        );
+        $builder->orderBy('a.id', 'ASC');
+        $paginated = $this->paginateBy($builder, $request);
 
         return new JsonResponse([
-            'data' => $data,
-            'meta' => [
-                'from' => (int) !empty($authors),
-                'to' => $count = count($authors),
-                'total' => $count,
-                'per_page' => 'all',
-                'current_page' => 1,
-                'last_page' => 1,
-            ],
+            'data' => array_map(
+                fn(Author $author) => $this->toArray($author),
+                $paginated['data']
+            ),
+            'meta' => $paginated['meta'],
             'message' => 'OK',
         ]);
     }
@@ -103,12 +89,24 @@ class AuthorApiController extends AbstractController
         }
 
         return new JsonResponse([
-            'data' => [
-                'id' => $author->getId(),
-                'name' => $author->getName(),
-                'alias' => $author->getAlias(),
-            ],
+            'data' => $this->toArray($author),
             'message' => 'OK',
         ]);
+    }
+
+    /**
+     * Converts an author record to an array that can be returned in the response.
+     *
+     * @param Author $author
+     *
+     * @return array
+     */
+    private function toArray(Author $author): array
+    {
+        return [
+            'id' => $author->getId(),
+            'name' => $author->getName(),
+            'alias' => $author->getAlias(),
+        ];
     }
 }
