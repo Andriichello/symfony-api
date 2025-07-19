@@ -20,3 +20,15 @@ authors_show:
     methods: GET|HEAD
     requirements:
         id: '[1-9][0-9]*'
+
+genres_list:
+    path: /api/genres
+    controller: App\Controller\GenreApiController::list
+    methods: GET|HEAD
+
+genres_show:
+    path: /api/genres/{id}
+    controller: App\Controller\GenreApiController::show
+    methods: GET|HEAD
+    requirements:
+        id: '[1-9][0-9]*'

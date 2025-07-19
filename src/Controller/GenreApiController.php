@@ -4,35 +4,38 @@ namespace App\Controller;
 
 use App\Controller\Trait\PaginatesTrait;
 use App\Entity\Author;
+use App\Entity\Genre;
 use App\Query\AuthorQueryBuilder;
+use App\Query\GenreQueryBuilder;
 use App\Repository\AuthorRepository;
+use App\Repository\GenreRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Class AuthorApiController.
+ * Class GenreApiController.
  *
  * @package App\Controller
  * @author Andrii Prykhodko <andriichello@gmail.com>
  */
-class AuthorApiController extends AbstractController
+class GenreApiController extends AbstractController
 {
     use PaginatesTrait;
 
     /**
-     * AuthorApiController's constructor.
+     * GenreApiController's constructor.
      *
-     * @param AuthorRepository $repo
+     * @param GenreRepository $repo
      */
     public function __construct(
-        private readonly AuthorRepository $repo
+        private readonly GenreRepository $repo
     ) {
         //
     }
 
     /**
-     * Returns a list of author records.
+     * Returns a list of genre records.
      *
      * @param Request $request
      *
@@ -52,11 +55,11 @@ class AuthorApiController extends AbstractController
             }
         }
 
-        $builder = $this->repo->createQueryBuilder($alias = 'a');
+        $builder = $this->repo->createQueryBuilder($alias = 'g');
         $builder = $this->repo->applyRequestFilters($builder, $alias, $request);
 
         if (isset($search) && strlen($search) > 0) {
-            /** @var AuthorQueryBuilder $builder */
+            /** @var GenreQueryBuilder $builder */
             $builder = $this->repo->search($alias, $builder, $search);
         }
 
@@ -65,7 +68,7 @@ class AuthorApiController extends AbstractController
 
         return new JsonResponse([
             'data' => array_map(
-                fn(Author $author) => $this->toArray($author),
+                fn(Genre $genre) => $this->toArray($genre),
                 $paginated['data']
             ),
             'meta' => $paginated['meta'],
@@ -74,7 +77,7 @@ class AuthorApiController extends AbstractController
     }
 
     /**
-     * Returns an author record by ID.
+     * Returns an genre record by ID.
      *
      * @param int $id
      *
@@ -85,7 +88,7 @@ class AuthorApiController extends AbstractController
         $author = $this->repo->find($id);
 
         if (empty($author)) {
-            return new JsonResponse(['message' => 'Author not found.'], 404);
+            return new JsonResponse(['message' => 'Genre not found.'], 404);
         }
 
         return new JsonResponse([
@@ -95,18 +98,18 @@ class AuthorApiController extends AbstractController
     }
 
     /**
-     * Converts an author record to an array that can be returned in the response.
+     * Converts an genre record to an array that can be returned in the response.
      *
-     * @param Author $author
+     * @param Genre $genre
      *
      * @return array
      */
-    private function toArray(Author $author): array
+    private function toArray(Genre $genre): array
     {
         return [
-            'id' => $author->getId(),
-            'name' => $author->getName(),
-            'alias' => $author->getAlias(),
+            'id' => $genre->getId(),
+            'name' => $genre->getName(),
+            'description' => $genre->getDescription(),
         ];
     }
 }
