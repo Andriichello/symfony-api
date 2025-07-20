@@ -6,9 +6,11 @@ use App\Controller\Trait\PaginatesTrait;
 use App\Entity\Author;
 use App\Query\AuthorQueryBuilder;
 use App\Repository\AuthorRepository;
+use App\Resource\AuthorResource;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class AuthorApiController.
@@ -41,9 +43,10 @@ class AuthorApiController extends AbstractController
     public function list(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $filter = $request->get('filter');
+        $filters = (array) $request->get('filter');
+        $includes = (array) $request->get('include');
 
-        if (isset($filter) && is_array($filter)) {
+        if (!empty($filters)) {
             if (isset($search) && strlen($search) > 0) {
                 $message = 'Cannot use both `filter` and `search` parameters' .
                     ' at the same time.';
@@ -53,19 +56,19 @@ class AuthorApiController extends AbstractController
         }
 
         $builder = $this->repo->createQueryBuilder($alias = 'a');
-        $builder = $this->repo->applyRequestFilters($builder, $alias, $request);
+        $builder = $this->repo->applyIncludes($builder, $alias, $includes);
+        $builder = $this->repo->applyFilters($builder, $alias, $filters);
 
         if (isset($search) && strlen($search) > 0) {
             /** @var AuthorQueryBuilder $builder */
             $builder = $this->repo->search($alias, $builder, $search);
         }
 
-        $builder->orderBy("$alias.id", 'ASC');
-        $paginated = $this->paginateBy($builder, $request);
+        $paginated = $this->paginateByRequest($builder, $request);
 
         return new JsonResponse([
             'data' => array_map(
-                fn(Author $author) => $this->toArray($author),
+                fn(Author $author) => $this->toArray($author, $includes),
                 $paginated['data']
             ),
             'meta' => $paginated['meta'],
@@ -98,15 +101,12 @@ class AuthorApiController extends AbstractController
      * Converts an author record to an array that can be returned in the response.
      *
      * @param Author $author
+     * @param array $includes
      *
      * @return array
      */
-    private function toArray(Author $author): array
+    private function toArray(Author $author, array $includes = []): array
     {
-        return [
-            'id' => $author->getId(),
-            'name' => $author->getName(),
-            'alias' => $author->getAlias(),
-        ];
+        return (new AuthorResource($author, $includes))->toArray();
     }
 }

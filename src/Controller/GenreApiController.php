@@ -9,9 +9,11 @@ use App\Query\AuthorQueryBuilder;
 use App\Query\GenreQueryBuilder;
 use App\Repository\AuthorRepository;
 use App\Repository\GenreRepository;
+use App\Resource\GenreResource;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class GenreApiController.
@@ -44,9 +46,10 @@ class GenreApiController extends AbstractController
     public function list(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $filter = $request->get('filter');
+        $filters = (array) $request->get('filter');
+        $includes = (array) $request->get('include');
 
-        if (isset($filter) && is_array($filter)) {
+        if (!empty($filters)) {
             if (isset($search) && strlen($search) > 0) {
                 $message = 'Cannot use both `filter` and `search` parameters' .
                     ' at the same time.';
@@ -56,19 +59,19 @@ class GenreApiController extends AbstractController
         }
 
         $builder = $this->repo->createQueryBuilder($alias = 'g');
-        $builder = $this->repo->applyRequestFilters($builder, $alias, $request);
+        $builder = $this->repo->applyIncludes($builder, $alias, $includes);
+        $builder = $this->repo->applyFilters($builder, $alias, $filters);
 
         if (isset($search) && strlen($search) > 0) {
             /** @var GenreQueryBuilder $builder */
             $builder = $this->repo->search($alias, $builder, $search);
         }
 
-        $builder->orderBy("$alias.id", 'ASC');
-        $paginated = $this->paginateBy($builder, $request);
+        $paginated = $this->paginateByRequest($builder, $request);
 
         return new JsonResponse([
             'data' => array_map(
-                fn(Genre $genre) => $this->toArray($genre),
+                fn(Genre $genre) => $this->toArray($genre, $includes),
                 $paginated['data']
             ),
             'meta' => $paginated['meta'],
@@ -101,15 +104,12 @@ class GenreApiController extends AbstractController
      * Converts an genre record to an array that can be returned in the response.
      *
      * @param Genre $genre
+     * @param array $includes
      *
      * @return array
      */
-    private function toArray(Genre $genre): array
+    private function toArray(Genre $genre, array $includes = []): array
     {
-        return [
-            'id' => $genre->getId(),
-            'name' => $genre->getName(),
-            'description' => $genre->getDescription(),
-        ];
+        return (new GenreResource($genre, $includes))->toArray();
     }
 }

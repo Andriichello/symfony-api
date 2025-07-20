@@ -80,7 +80,7 @@ trait PaginatesTrait
      *     }
      * }
      */
-    public function paginateBy(
+    public function paginateByRequest(
         QueryBuilder $builder,
         Request $request,
     ): array {
