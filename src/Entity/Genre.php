@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\GenreRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -13,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Table(name: 'genres')]
 #[ORM\Entity(repositoryClass: GenreRepository::class)]
-class Genre
+class Genre extends BaseEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -25,6 +27,17 @@ class Genre
 
     #[ORM\Column(length: 510, nullable: true)]
     private ?string $description = null;
+
+    /**
+     * @var Collection<int, Author>
+     */
+    #[ORM\ManyToMany(targetEntity: Author::class, mappedBy: 'genres')]
+    private Collection $authors;
+
+    public function __construct()
+    {
+        $this->authors = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -51,6 +64,33 @@ class Genre
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Author>
+     */
+    public function getAuthors(): Collection
+    {
+        return $this->authors;
+    }
+
+    public function addAuthor(Author $author): static
+    {
+        if (!$this->authors->contains($author)) {
+            $this->authors->add($author);
+            $author->addGenre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAuthor(Author $author): static
+    {
+        if ($this->authors->removeElement($author)) {
+            $author->removeGenre($this);
+        }
 
         return $this;
     }
