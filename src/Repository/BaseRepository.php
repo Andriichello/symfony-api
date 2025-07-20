@@ -3,38 +3,46 @@
 namespace App\Repository;
 
 use App\Entity\Author;
+use App\Entity\BaseEntity;
 use App\Enum\FilterFlag;
 use App\Enum\FilterOperator;
 use App\Query\BaseQueryBuilder;
 use App\Repository\Interface\HasFiltersInterface;
+use App\Repository\Interface\HasIncludesInterface;
 use App\Repository\Interface\ResolvesFiltersInterface;
+use App\Repository\Interface\ResolvesIncludesInterface;
 use App\Repository\Trait\HasFiltersTrait;
+use App\Repository\Trait\HasIncludesTrait;
 use App\Repository\Trait\ResolvesFiltersTrait;
+use App\Repository\Trait\ResolvesIncludesTrait;
+use App\Resource\BaseResource;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class AuthorRepository.
  *
- * @extends ServiceEntityRepository<Entity>
+ * @extends ServiceEntityRepository<BaseEntity>
  *
  * @package App\Repository
  * @author Andrii Prykhodko <andriichello@gmail.com>
  */
 abstract class BaseRepository extends ServiceEntityRepository implements
     HasFiltersInterface,
-    ResolvesFiltersInterface
+    ResolvesFiltersInterface,
+    HasIncludesInterface,
+    ResolvesIncludesInterface
 {
     use HasFiltersTrait;
     use ResolvesFiltersTrait;
+    use HasIncludesTrait;
+    use ResolvesIncludesTrait;
 
     /**
      * Entity class to be used.
      *
-     * @var class-string<Entity>
+     * @var class-string<BaseEntity>
      */
     protected string $entityClass;
 
@@ -55,6 +63,15 @@ abstract class BaseRepository extends ServiceEntityRepository implements
     ];
 
     /**
+     * Include names that are allowed.
+     *
+     * @var string[]
+     */
+    protected array $allowedIncludes = [
+        //
+    ];
+
+    /**
      * BaseRepository's constructor.
      *
      * @param ManagerRegistry $registry
@@ -67,11 +84,21 @@ abstract class BaseRepository extends ServiceEntityRepository implements
     /**
      * Returns an entity class.
      *
-     * @return class-string<Entity>
+     * @return class-string<BaseEntity>
      */
     public function entityClass(): string
     {
         return $this->entityClass;
+    }
+
+    /**
+     * Returns an entity class.
+     *
+     * @return class-string<BaseResource>
+     */
+    public function resourceClass(): string
+    {
+        return $this->resourceClass;
     }
 
     /**
@@ -110,19 +137,17 @@ abstract class BaseRepository extends ServiceEntityRepository implements
     }
 
     /**
-     * Applies request filters onto a given query builder.
+     * Applies filters onto a given query builder.
      *
      * @param BaseQueryBuilder $builder
      * @param string $alias
-     * @param Request $request
+     * @param array $filters
      *
      * @return BaseQueryBuilder
      */
-    public function applyRequestFilters(BaseQueryBuilder $builder, string $alias, Request $request): BaseQueryBuilder
+    public function applyFilters(BaseQueryBuilder $builder, string $alias, array $filters): BaseQueryBuilder
     {
-        $filters = $this->resolveFilters((array) $request->get('filter'));
-
-        foreach ($filters as $filter) {
+        foreach ($this->resolveFilters($filters) as $filter) {
             $column = "$alias.{$filter['name']}";
             $operator = $filter['operator'];
             $flags = $filter['flags'] ?? [];
@@ -147,6 +172,24 @@ abstract class BaseRepository extends ServiceEntityRepository implements
                         not: $not
                     );
             }
+        }
+
+        return $builder;
+    }
+
+    /**
+     * Applies includes onto a given query builder.
+     *
+     * @param BaseQueryBuilder $builder
+     * @param string $alias
+     * @param array $includes
+     *
+     * @return BaseQueryBuilder
+     */
+    public function applyIncludes(BaseQueryBuilder $builder, string $alias, array $includes): BaseQueryBuilder
+    {
+        foreach ($this->resolveIncludes($includes) as $include) {
+            $builder->leftJoin("$alias.$include", $include);
         }
 
         return $builder;

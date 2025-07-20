@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Author;
 use App\Query\AuthorQueryBuilder;
+use App\Resource\AuthorResource;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
@@ -20,12 +21,18 @@ class AuthorRepository extends BaseRepository
 {
     protected string $entityClass = Author::class;
 
+    protected string $resourceClass = AuthorResource::class;
+
     protected string $queryBuilderClass = AuthorQueryBuilder::class;
 
     protected array $allowedFilters = [
         'id',
         'name',
         'alias',
+    ];
+
+    protected array $allowedIncludes = [
+        'genres',
     ];
 
     /**
