@@ -5,8 +5,6 @@ namespace App\Repository;
 use App\Entity\Author;
 use App\Query\AuthorQueryBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class AuthorRepository.

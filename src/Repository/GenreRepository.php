@@ -2,13 +2,19 @@
 
 namespace App\Repository;
 
-use App\Entity\Author;
 use App\Entity\Genre;
 use App\Query\GenreQueryBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
+ * Class GenreRepository.
+ *
  * @extends ServiceEntityRepository<Genre>
+ *
+ * @method GenreQueryBuilder createQueryBuilder(string $alias, ?string $indexBy = null)
+ *
+ * @package App\Repository
+ * @author Andrii Prykhodko <andriichello@gmail.com>
  */
 class GenreRepository extends BaseRepository
 {
