@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'unique_user_email', columns: ['email'])]
-class User
+class User extends BaseEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

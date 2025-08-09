@@ -5,36 +5,37 @@ namespace App\Controller;
 use App\Controller\Trait\PaginatesTrait;
 use App\Entity\Author;
 use App\Entity\Genre;
-use App\Query\GenreQueryBuilder;
-use App\Repository\GenreRepository;
-use App\Resource\GenreResource;
+use App\Entity\User;
+use App\Query\UserQueryBuilder;
+use App\Repository\UserRepository;
+use App\Resource\UserResource;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Class GenreApiController.
+ * Class UserApiController.
  *
  * @package App\Controller
  * @author Andrii Prykhodko <andriichello@gmail.com>
  */
-class GenreApiController extends AbstractController
+class UserApiController extends AbstractController
 {
     use PaginatesTrait;
 
     /**
-     * GenreApiController's constructor.
+     * UserApiController's constructor.
      *
-     * @param GenreRepository $repo
+     * @param UserRepository $repo
      */
     public function __construct(
-        private readonly GenreRepository $repo
+        private readonly UserRepository $repo
     ) {
         //
     }
 
     /**
-     * Returns a list of genre records.
+     * Returns a list of user records.
      *
      * @param Request $request
      *
@@ -60,7 +61,7 @@ class GenreApiController extends AbstractController
         $builder = $this->repo->applyFilters($builder, $alias, $filters);
 
         if (isset($search) && strlen($search) > 0) {
-            /** @var GenreQueryBuilder $builder */
+            /** @var UserQueryBuilder $builder */
             $builder = $this->repo->search($alias, $builder, $search);
         }
 
@@ -68,7 +69,7 @@ class GenreApiController extends AbstractController
 
         return new JsonResponse([
             'data' => array_map(
-                fn(Genre $genre) => $this->toArray($genre, $includes),
+                fn(User $user) => $this->toArray($user, $includes),
                 $paginated['data']
             ),
             'meta' => $paginated['meta'],
@@ -77,7 +78,7 @@ class GenreApiController extends AbstractController
     }
 
     /**
-     * Returns a genre record by ID.
+     * Returns a user record by ID.
      *
      * @param int $id
      *
@@ -85,28 +86,28 @@ class GenreApiController extends AbstractController
      */
     public function show(int $id): JsonResponse
     {
-        $genre = $this->repo->find($id);
+        $user = $this->repo->find($id);
 
-        if (empty($genre)) {
-            return new JsonResponse(['message' => 'Genre not found.'], 404);
+        if (empty($user)) {
+            return new JsonResponse(['message' => 'User not found.'], 404);
         }
 
         return new JsonResponse([
-            'data' => $this->toArray($genre),
+            'data' => $this->toArray($user),
             'message' => 'OK',
         ]);
     }
 
     /**
-     * Converts a genre record to an array that can be returned in the response.
+     * Converts a user record to an array that can be returned in the response.
      *
-     * @param Genre $genre
+     * @param User $user
      * @param array $includes
      *
      * @return array
      */
-    private function toArray(Genre $genre, array $includes = []): array
+    private function toArray(User $user, array $includes = []): array
     {
-        return (new GenreResource($genre, $includes))->toArray();
+        return (new UserResource($user, $includes))->toArray();
     }
 }
