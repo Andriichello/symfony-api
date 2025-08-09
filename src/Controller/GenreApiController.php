@@ -5,15 +5,12 @@ namespace App\Controller;
 use App\Controller\Trait\PaginatesTrait;
 use App\Entity\Author;
 use App\Entity\Genre;
-use App\Query\AuthorQueryBuilder;
 use App\Query\GenreQueryBuilder;
-use App\Repository\AuthorRepository;
 use App\Repository\GenreRepository;
 use App\Resource\GenreResource;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class GenreApiController.
