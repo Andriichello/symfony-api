@@ -9,6 +9,19 @@ kernel:
     type: attribute
 
 # API Routes
+users_list:
+    path: /api/users
+    controller: App\Controller\UserApiController::list
+    methods: GET|HEAD
+
+users_show:
+    path: /api/users/{id}
+    controller: App\Controller\UserApiController::show
+    methods: GET|HEAD
+    requirements:
+        id: '[1-9][0-9]*'
+
+
 authors_list:
     path: /api/authors
     controller: App\Controller\AuthorApiController::list
