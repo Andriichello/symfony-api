@@ -77,7 +77,7 @@ class GenreApiController extends AbstractController
     }
 
     /**
-     * Returns an genre record by ID.
+     * Returns a genre record by ID.
      *
      * @param int $id
      *
@@ -98,7 +98,7 @@ class GenreApiController extends AbstractController
     }
 
     /**
-     * Converts an genre record to an array that can be returned in the response.
+     * Converts a genre record to an array that can be returned in the response.
      *
      * @param Genre $genre
      * @param array $includes

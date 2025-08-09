@@ -6,6 +6,7 @@ use App\Entity\Author;
 use App\Repository\Interface\HasFiltersInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -39,6 +40,18 @@ trait PaginatesTrait
         int $page = 1,
         int $perPage = 25
     ): array {
+        if ($page < 1) {
+            throw new InvalidArgumentException(
+                'Invalid page parameter value.'
+            );
+        }
+
+        if ($perPage < 1) {
+            throw new InvalidArgumentException(
+                'Invalid per_page parameter value.'
+            );
+        }
+
         $builder->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage);
 
