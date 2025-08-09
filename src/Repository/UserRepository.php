@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\User;
-use App\Query\GenreQueryBuilder;
 use App\Query\UserQueryBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -12,7 +11,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
  *
  * @extends ServiceEntityRepository<User>
  *
- * @method GenreQueryBuilder createQueryBuilder(string $alias, ?string $indexBy = null)
+ * @method UserQueryBuilder createQueryBuilder(string $alias, ?string $indexBy = null)
  *
  * @package App\Repository
  * @author Andrii Prykhodko <andriichello@gmail.com>
@@ -34,12 +33,12 @@ class UserRepository extends BaseRepository
      * Searches genres by the given search query.
      *
      * @param string $alias
-     * @param GenreQueryBuilder $builder
+     * @param UserQueryBuilder $builder
      * @param string $query
      *
-     * @return GenreQueryBuilder
+     * @return UserQueryBuilder
      */
-    public function search(string $alias, GenreQueryBuilder $builder, string $query): GenreQueryBuilder
+    public function search(string $alias, UserQueryBuilder $builder, string $query): UserQueryBuilder
     {
         return $builder->whereColumnLikeByWords("$alias.name", $query, true);
     }
