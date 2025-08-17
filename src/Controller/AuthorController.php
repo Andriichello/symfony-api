@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\AuthorRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,11 +15,13 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class AuthorController extends AbstractController
 {
-    #[Route('/author', name: 'app_author')]
-    public function index(): Response
+    #[Route('/web/authors', name: 'web.authors')]
+    public function index(AuthorRepository $repo): Response
     {
-        return $this->render('author/index.html.twig', [
-            'controller_name' => 'AuthorController',
+        $authors = $repo->findAll();
+
+        return $this->render('authors/index.html.twig', [
+            'authors' => $authors,
         ]);
     }
 }
