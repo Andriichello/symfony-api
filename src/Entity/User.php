@@ -4,12 +4,14 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'unique_user_email', columns: ['email'])]
-class User extends BaseEntity
+class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -85,12 +87,12 @@ class User extends BaseEntity
         return $this;
     }
 
-    public function getRoles(): ?array
+    public function getRoles(): array
     {
-        return $this->roles;
+        return $this->roles ?? [];
     }
 
-    public function setRoles(?array $roles): static
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -131,5 +133,15 @@ class User extends BaseEntity
         $this->updated_at = $updated_at;
 
         return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        //
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
     }
 }
